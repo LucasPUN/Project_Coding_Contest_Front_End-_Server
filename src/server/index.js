@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const FileApi = require('./api/FileApi');
 const RunnerManager = require('./compiler/RunnerManager');
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 8083;
 
 const app = express();
 // Here we are configuring express to use body-parser as middle-ware.
@@ -13,6 +13,21 @@ app.use(bodyParser.json());
 
 // serve static files
 app.use(express.static('dist'));
+
+const cors = require('cors');
+app.use(cors({ origin: '*' }));
+
+const { createProxyMiddleware } = require('http-proxy-middleware');
+
+module.exports = function(app) {
+  app.use(
+      '/api',
+      createProxyMiddleware({
+        target: 'http://ec2-54-255-147-142.ap-southeast-1.compute.amazonaws.com:8083',
+        changeOrigin: true,
+      })
+  );
+};
 
 // Add headers
 app.use((req, res, next) => {
